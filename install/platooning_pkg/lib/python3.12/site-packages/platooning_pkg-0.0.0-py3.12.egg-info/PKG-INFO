@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: platooning-pkg
+Version: 0.0.0
+Summary: ROS2 package for vehicle platooning simulation
+Maintainer: ms
+Maintainer-email: ms@todo.todo
+License: TODO: License declaration

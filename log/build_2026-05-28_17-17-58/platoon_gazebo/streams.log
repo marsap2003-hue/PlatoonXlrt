@@ -1,0 +1,32 @@
+[1.768s] Invoking command in '/home/ms/ros2_ws/src/platoon_gazebo': PYTHONPATH=/home/ms/ros2_ws/build/platoon_gazebo/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/platoon_gazebo build --build-base /home/ms/ros2_ws/build/platoon_gazebo/build install --record /home/ms/ros2_ws/build/platoon_gazebo/install.log --single-version-externally-managed install_data
+[2.035s] running egg_info
+[2.035s] creating ../../build/platoon_gazebo/platoon_gazebo.egg-info
+[2.052s] writing ../../build/platoon_gazebo/platoon_gazebo.egg-info/PKG-INFO
+[2.052s] writing dependency_links to ../../build/platoon_gazebo/platoon_gazebo.egg-info/dependency_links.txt
+[2.052s] writing requirements to ../../build/platoon_gazebo/platoon_gazebo.egg-info/requires.txt
+[2.055s] writing top-level names to ../../build/platoon_gazebo/platoon_gazebo.egg-info/top_level.txt
+[2.055s] writing manifest file '../../build/platoon_gazebo/platoon_gazebo.egg-info/SOURCES.txt'
+[2.087s] reading manifest file '../../build/platoon_gazebo/platoon_gazebo.egg-info/SOURCES.txt'
+[2.088s] writing manifest file '../../build/platoon_gazebo/platoon_gazebo.egg-info/SOURCES.txt'
+[2.088s] running build
+[2.088s] running build_py
+[2.088s] creating /home/ms/ros2_ws/build/platoon_gazebo/build
+[2.089s] creating /home/ms/ros2_ws/build/platoon_gazebo/build/lib
+[2.089s] creating /home/ms/ros2_ws/build/platoon_gazebo/build/lib/platoon_gazebo
+[2.090s] copying platoon_gazebo/__init__.py -> /home/ms/ros2_ws/build/platoon_gazebo/build/lib/platoon_gazebo
+[2.091s] running install
+[2.096s] running install_lib
+[2.117s] creating /home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages/platoon_gazebo
+[2.117s] copying /home/ms/ros2_ws/build/platoon_gazebo/build/lib/platoon_gazebo/__init__.py -> /home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages/platoon_gazebo
+[2.117s] byte-compiling /home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages/platoon_gazebo/__init__.py to __init__.cpython-312.pyc
+[2.118s] running install_data
+[2.118s] creating /home/ms/ros2_ws/install/platoon_gazebo/share/ament_index
+[2.118s] creating /home/ms/ros2_ws/install/platoon_gazebo/share/ament_index/resource_index
+[2.119s] creating /home/ms/ros2_ws/install/platoon_gazebo/share/ament_index/resource_index/packages
+[2.119s] copying resource/platoon_gazebo -> /home/ms/ros2_ws/install/platoon_gazebo/share/ament_index/resource_index/packages
+[2.119s] copying package.xml -> /home/ms/ros2_ws/install/platoon_gazebo/share/platoon_gazebo
+[2.120s] running install_egg_info
+[2.140s] Copying ../../build/platoon_gazebo/platoon_gazebo.egg-info to /home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages/platoon_gazebo-0.0.0-py3.12.egg-info
+[2.140s] running install_scripts
+[2.271s] writing list of installed files to '/home/ms/ros2_ws/build/platoon_gazebo/install.log'
+[2.329s] Invoked command in '/home/ms/ros2_ws/src/platoon_gazebo' returned '0': PYTHONPATH=/home/ms/ros2_ws/build/platoon_gazebo/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/platoon_gazebo build --build-base /home/ms/ros2_ws/build/platoon_gazebo/build install --record /home/ms/ros2_ws/build/platoon_gazebo/install.log --single-version-externally-managed install_data

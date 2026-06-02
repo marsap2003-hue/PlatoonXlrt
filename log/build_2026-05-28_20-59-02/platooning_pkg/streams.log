@@ -1,0 +1,27 @@
+[1.131s] Invoking command in '/home/ms/ros2_ws/src/platooning_pkg': PYTHONPATH=/home/ms/ros2_ws/build/platooning_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ms/ros2_ws/install/platooning_pkg/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/platooning_pkg build --build-base /home/ms/ros2_ws/build/platooning_pkg/build install --record /home/ms/ros2_ws/build/platooning_pkg/install.log --single-version-externally-managed install_data
+[1.370s] running egg_info
+[1.385s] writing ../../build/platooning_pkg/platooning_pkg.egg-info/PKG-INFO
+[1.386s] writing dependency_links to ../../build/platooning_pkg/platooning_pkg.egg-info/dependency_links.txt
+[1.386s] writing entry points to ../../build/platooning_pkg/platooning_pkg.egg-info/entry_points.txt
+[1.386s] writing requirements to ../../build/platooning_pkg/platooning_pkg.egg-info/requires.txt
+[1.386s] writing top-level names to ../../build/platooning_pkg/platooning_pkg.egg-info/top_level.txt
+[1.419s] reading manifest file '../../build/platooning_pkg/platooning_pkg.egg-info/SOURCES.txt'
+[1.420s] writing manifest file '../../build/platooning_pkg/platooning_pkg.egg-info/SOURCES.txt'
+[1.420s] running build
+[1.420s] running build_py
+[1.421s] copying platooning_pkg/gazebo_follower.py -> /home/ms/ros2_ws/build/platooning_pkg/build/lib/platooning_pkg
+[1.421s] running install
+[1.427s] running install_lib
+[1.443s] copying /home/ms/ros2_ws/build/platooning_pkg/build/lib/platooning_pkg/gazebo_follower.py -> /home/ms/ros2_ws/install/platooning_pkg/lib/python3.12/site-packages/platooning_pkg
+[1.444s] byte-compiling /home/ms/ros2_ws/install/platooning_pkg/lib/python3.12/site-packages/platooning_pkg/gazebo_follower.py to gazebo_follower.cpython-312.pyc
+[1.444s] running install_data
+[1.445s] running install_egg_info
+[1.462s] removing '/home/ms/ros2_ws/install/platooning_pkg/lib/python3.12/site-packages/platooning_pkg-0.0.0-py3.12.egg-info' (and everything under it)
+[1.462s] Copying ../../build/platooning_pkg/platooning_pkg.egg-info to /home/ms/ros2_ws/install/platooning_pkg/lib/python3.12/site-packages/platooning_pkg-0.0.0-py3.12.egg-info
+[1.463s] running install_scripts
+[1.577s] Installing follower_node script to /home/ms/ros2_ws/install/platooning_pkg/lib/platooning_pkg
+[1.578s] Installing gazebo_follower script to /home/ms/ros2_ws/install/platooning_pkg/lib/platooning_pkg
+[1.578s] Installing gazebo_leader script to /home/ms/ros2_ws/install/platooning_pkg/lib/platooning_pkg
+[1.578s] Installing leader_node script to /home/ms/ros2_ws/install/platooning_pkg/lib/platooning_pkg
+[1.578s] writing list of installed files to '/home/ms/ros2_ws/build/platooning_pkg/install.log'
+[1.611s] Invoked command in '/home/ms/ros2_ws/src/platooning_pkg' returned '0': PYTHONPATH=/home/ms/ros2_ws/build/platooning_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ms/ros2_ws/install/platooning_pkg/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/platooning_pkg build --build-base /home/ms/ros2_ws/build/platooning_pkg/build install --record /home/ms/ros2_ws/build/platooning_pkg/install.log --single-version-externally-managed install_data

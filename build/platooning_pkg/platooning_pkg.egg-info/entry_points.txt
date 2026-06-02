@@ -1,0 +1,6 @@
+[console_scripts]
+data_logger = platooning_pkg.data_logger:main
+follower_node = platooning_pkg.follower_node:main
+gazebo_follower = platooning_pkg.gazebo_follower:main
+gazebo_leader = platooning_pkg.gazebo_leader:main
+leader_node = platooning_pkg.leader_node:main

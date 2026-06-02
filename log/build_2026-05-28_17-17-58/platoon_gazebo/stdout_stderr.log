@@ -1,0 +1,30 @@
+running egg_info
+creating ../../build/platoon_gazebo/platoon_gazebo.egg-info
+writing ../../build/platoon_gazebo/platoon_gazebo.egg-info/PKG-INFO
+writing dependency_links to ../../build/platoon_gazebo/platoon_gazebo.egg-info/dependency_links.txt
+writing requirements to ../../build/platoon_gazebo/platoon_gazebo.egg-info/requires.txt
+writing top-level names to ../../build/platoon_gazebo/platoon_gazebo.egg-info/top_level.txt
+writing manifest file '../../build/platoon_gazebo/platoon_gazebo.egg-info/SOURCES.txt'
+reading manifest file '../../build/platoon_gazebo/platoon_gazebo.egg-info/SOURCES.txt'
+writing manifest file '../../build/platoon_gazebo/platoon_gazebo.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/ms/ros2_ws/build/platoon_gazebo/build
+creating /home/ms/ros2_ws/build/platoon_gazebo/build/lib
+creating /home/ms/ros2_ws/build/platoon_gazebo/build/lib/platoon_gazebo
+copying platoon_gazebo/__init__.py -> /home/ms/ros2_ws/build/platoon_gazebo/build/lib/platoon_gazebo
+running install
+running install_lib
+creating /home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages/platoon_gazebo
+copying /home/ms/ros2_ws/build/platoon_gazebo/build/lib/platoon_gazebo/__init__.py -> /home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages/platoon_gazebo
+byte-compiling /home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages/platoon_gazebo/__init__.py to __init__.cpython-312.pyc
+running install_data
+creating /home/ms/ros2_ws/install/platoon_gazebo/share/ament_index
+creating /home/ms/ros2_ws/install/platoon_gazebo/share/ament_index/resource_index
+creating /home/ms/ros2_ws/install/platoon_gazebo/share/ament_index/resource_index/packages
+copying resource/platoon_gazebo -> /home/ms/ros2_ws/install/platoon_gazebo/share/ament_index/resource_index/packages
+copying package.xml -> /home/ms/ros2_ws/install/platoon_gazebo/share/platoon_gazebo
+running install_egg_info
+Copying ../../build/platoon_gazebo/platoon_gazebo.egg-info to /home/ms/ros2_ws/install/platoon_gazebo/lib/python3.12/site-packages/platoon_gazebo-0.0.0-py3.12.egg-info
+running install_scripts
+writing list of installed files to '/home/ms/ros2_ws/build/platoon_gazebo/install.log'

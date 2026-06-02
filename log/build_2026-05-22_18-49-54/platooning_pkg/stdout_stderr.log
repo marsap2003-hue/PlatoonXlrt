@@ -1,0 +1,19 @@
+running egg_info
+writing ../../build/platooning_pkg/platooning_pkg.egg-info/PKG-INFO
+writing dependency_links to ../../build/platooning_pkg/platooning_pkg.egg-info/dependency_links.txt
+writing entry points to ../../build/platooning_pkg/platooning_pkg.egg-info/entry_points.txt
+writing requirements to ../../build/platooning_pkg/platooning_pkg.egg-info/requires.txt
+writing top-level names to ../../build/platooning_pkg/platooning_pkg.egg-info/top_level.txt
+reading manifest file '../../build/platooning_pkg/platooning_pkg.egg-info/SOURCES.txt'
+writing manifest file '../../build/platooning_pkg/platooning_pkg.egg-info/SOURCES.txt'
+running build
+running build_py
+running install
+running install_lib
+running install_data
+running install_egg_info
+removing '/home/ms/ros2_ws/install/platooning_pkg/lib/python3.12/site-packages/platooning_pkg-0.0.0-py3.12.egg-info' (and everything under it)
+Copying ../../build/platooning_pkg/platooning_pkg.egg-info to /home/ms/ros2_ws/install/platooning_pkg/lib/python3.12/site-packages/platooning_pkg-0.0.0-py3.12.egg-info
+running install_scripts
+Installing leader_node script to /home/ms/ros2_ws/install/platooning_pkg/lib/platooning_pkg
+writing list of installed files to '/home/ms/ros2_ws/build/platooning_pkg/install.log'
