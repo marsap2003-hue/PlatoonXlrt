@@ -223,8 +223,8 @@ Generated plots include:
 
 ## Author
 
-Marios XXXXX
+Marios Saparillas
 
 Department of Electrical and Computer Engineering
 
-University of Thessaly
+Cyprus University of Technology
