@@ -16,6 +16,10 @@ class DataLogger(Node):
         self.master_x = 0.0
         self.slave_x = 0.0
 
+        self.master_received = False
+        self.slave_received = False
+        self.initialized = False
+
         self.previous_master_x = 0.0
         self.previous_slave_x = 0.0
         self.previous_time = 0.0
@@ -55,22 +59,37 @@ class DataLogger(Node):
 
     def master_callback(self, msg):
         self.master_x = msg.position.x
+        self.master_received = True
 
     def slave_callback(self, msg):
         self.slave_x = msg.position.x
+        self.slave_received = True
 
     def log_data(self):
         current_time = time.time() - self.start_time
+
+        if not self.master_received or not self.slave_received:
+            return
+
+        if not self.initialized:
+            self.previous_master_x = self.master_x
+            self.previous_slave_x = self.slave_x
+            self.previous_time = current_time
+            self.initialized = True
+            return
+
         dt = current_time - self.previous_time
 
-        if dt > 0.0:
-            self.master_velocity = (
-                self.master_x - self.previous_master_x
-            ) / dt
+        if dt <= 0.0:
+            return
 
-            self.slave_velocity = (
-                self.slave_x - self.previous_slave_x
-            ) / dt
+        self.master_velocity = (
+            self.master_x - self.previous_master_x
+        ) / dt
+
+        self.slave_velocity = (
+            self.slave_x - self.previous_slave_x
+        ) / dt
 
         actual_distance = self.master_x - self.slave_x
         distance_error = actual_distance - self.desired_distance
