@@ -4,14 +4,14 @@ from geometry_msgs.msg import Pose
 import subprocess
 
 
-class GazeboLeader(Node):
+class GazeboMaster(Node):
 
     def __init__(self):
-        super().__init__('gazebo_leader')
+        super().__init__('gazebo_master')
 
         self.pose_publisher = self.create_publisher(
             Pose,
-            '/leader_gazebo_pose',
+            '/master_gazebo_pose',
             10
         )
 
@@ -43,7 +43,7 @@ class GazeboLeader(Node):
             '--reqtype gz.msgs.Pose '
             '--reptype gz.msgs.Boolean '
             '--timeout 1000 '
-            f'--req \'name: "leader_vehicle" '
+            f'--req \'name: "master_vehicle" '
             f'position {{x: {self.x} y: {self.y} z: {self.z}}} '
             'orientation {w: 1}\''
         )
@@ -51,14 +51,14 @@ class GazeboLeader(Node):
         subprocess.run(command, shell=True)
 
         self.get_logger().info(
-            f'Leader moved -> x: {self.x:.2f}, y: {self.y:.2f}'
+            f'Master moved -> x: {self.x:.2f}, y: {self.y:.2f}'
         )
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    node = GazeboLeader()
+    node = GazeboMaster()
 
     rclpy.spin(node)
 
