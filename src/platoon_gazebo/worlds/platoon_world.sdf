@@ -47,7 +47,8 @@
 
       </link>
     </model>
-    <model name="leader_vehicle">
+
+    <model name="master_vehicle">
       <pose>0 0 0.5 0 0 0</pose>
 
       <link name="body">
@@ -77,7 +78,7 @@
       </link>
     </model>
 
-    <model name="follower_vehicle">
+    <model name="slave_vehicle">
       <pose>-8 0 0.5 0 0 0</pose>
 
       <link name="body">
@@ -106,5 +107,6 @@
         </inertial>
       </link>
     </model>
+
   </world>
 </sdf>
