@@ -17,6 +17,7 @@ The implementation includes:
 - Communication delay simulation
 - Packet loss simulation
 - Data logging to CSV files
+- Position, velocity and distance-error analysis
 - Python scripts for result visualization and analysis
 
 The communication experiments investigate:
@@ -270,7 +271,7 @@ dt = 0.1 s
 
 # 3. Communication Impairments
 
-Communication limitations were introduced in the `gazebo_slave.py` node in order to evaluate the performance of the platooning system under non-ideal V2V communication.
+Communication limitations were introduced in the `gazebo_slave.py` node in order to evaluate the performance of the platooning system under non-ideal V2V communication conditions.
 
 The two parameters are:
 
@@ -430,7 +431,7 @@ The `data_logger.py` node subscribes to:
 /slave_gazebo_pose
 ```
 
-Data are recorded every 0.1 s.
+Data are recorded every 0.1 s after valid pose information has been received from both vehicles.
 
 The following variables are stored:
 
@@ -438,13 +439,26 @@ The following variables are stored:
 time
 master_position
 slave_position
+master_velocity
+slave_velocity
 distance_error
 ```
 
-The distance error is calculated as:
+The Master and Slave velocities are estimated numerically from consecutive position measurements:
+
+```text
+velocity = (current_position - previous_position) / dt
+```
+
+The actual inter-vehicle distance is calculated as:
 
 ```text
 actual_distance = master_position - slave_position
+```
+
+The distance error is then calculated as:
+
+```text
 distance_error = actual_distance - desired_distance
 ```
 
@@ -453,6 +467,8 @@ with:
 ```text
 desired_distance = 5.0 m
 ```
+
+The logger waits until valid pose information has been received from both the Master and Slave before initializing the velocity calculation. This prevents invalid initial velocity estimates caused by uninitialized position values.
 
 The results are stored in:
 
@@ -484,16 +500,23 @@ The script reads:
 gazebo_platooning_data.csv
 ```
 
-and generates:
+and generates plots for:
 
 ```text
-gazebo_positions.png
-gazebo_distance_error.png
+Master and Slave positions
+Master and Slave velocities
+Distance error
 ```
 
-The first plot compares the Master and Slave positions.
+The position plot compares the longitudinal positions of the Master and Slave vehicles over time.
 
-The second plot presents the distance error over time.
+The velocity plot presents the estimated velocities of both vehicles and provides additional information about the dynamic response of the Slave to the motion of the Master.
+
+The distance-error plot shows the evolution of the inter-vehicle spacing error relative to the desired distance of 5 m.
+
+Because the velocities are estimated from consecutive position measurements, their plots may contain short peaks or zero values associated with the discrete update of the vehicle poses. For this reason, the velocity response is evaluated together with the position and distance-error plots rather than independently.
+
+Together, the three plots provide complementary information about the longitudinal behaviour of the platooning system under baseline and impaired communication conditions.
 
 ---
 
@@ -558,7 +581,16 @@ with:
 self.communication_delay = 0.0
 ```
 
-Again, rebuild and source the workspace after changing the parameters.
+Again, rebuild and source the workspace after changing the parameters:
+
+```bash
+colcon build
+source install/setup.bash
+```
+
+Because packet loss is implemented using random message dropping, repeated simulations with the same packet-loss probability may produce slightly different results.
+
+After each experiment, the generated CSV file can be saved under a different name if the corresponding dataset needs to be preserved for later comparison.
 
 ---
 
@@ -574,9 +606,19 @@ The experiments allow comparison between:
 - 20% packet loss
 - 40% packet loss
 
-The main performance indicator is the inter-vehicle distance error.
+The system performance is evaluated using three main outputs:
 
-The results show how increasing communication impairment affects the ability of the Slave to maintain the desired distance from the Master.
+- Master and Slave longitudinal positions
+- Master and Slave velocity response
+- Inter-vehicle distance error
+
+The distance error is the primary indicator of spacing performance, while the position and velocity responses provide additional information about the dynamic behaviour of the Master-Slave system.
+
+The experimental results allow the effect of increasing communication delay and packet loss on platooning performance to be evaluated and compared with the baseline communication scenario.
+
+The experiments show that communication impairments influence the response of the Slave vehicle. In particular, increasing communication delay can slow the correction of the spacing error, while packet loss introduces irregularity in the availability of updated Master information.
+
+The observed behaviour is specific to the implemented two-vehicle Master-Slave configuration and the experimental parameters used in this project. The implementation therefore provides a platform for evaluating communication effects on longitudinal platooning behaviour rather than a complete experimental validation of string stability in a multi-vehicle platoon.
 
 ---
 
