@@ -1,6 +1,5 @@
 import csv
 import time
-import os
 
 import rclpy
 from rclpy.node import Node
@@ -14,53 +13,52 @@ class DataLogger(Node):
 
         self.start_time = time.time()
 
-        self.leader_x = 0.0
-        self.follower_x = 0.0
+        self.master_x = 0.0
+        self.slave_x = 0.0
         self.desired_distance = 5.0
 
-        output_file = os.path.join(os.getcwd(), 'gazebo_platooning_data.csv')
-        self.file = open(output_file, 'w', newline='')
+        self.file = open('gazebo_platooning_data.csv', 'w', newline='')
         self.writer = csv.writer(self.file)
 
         self.writer.writerow([
             'time',
-            'leader_position',
-            'follower_position',
+            'master_position',
+            'slave_position',
             'distance_error'
         ])
 
         self.create_subscription(
             Pose,
-            '/leader_gazebo_pose',
-            self.leader_callback,
+            '/master_gazebo_pose',
+            self.master_callback,
             10
         )
 
         self.create_subscription(
             Pose,
-            '/follower_gazebo_pose',
-            self.follower_callback,
+            '/slave_gazebo_pose',
+            self.slave_callback,
             10
         )
 
         self.timer = self.create_timer(0.1, self.log_data)
 
-    def leader_callback(self, msg):
-        self.leader_x = msg.position.x
+    def master_callback(self, msg):
+        self.master_x = msg.position.x
 
-    def follower_callback(self, msg):
-        self.follower_x = msg.position.x
+    def slave_callback(self, msg):
+        self.slave_x = msg.position.x
 
     def log_data(self):
         current_time = time.time() - self.start_time
 
-        actual_distance = self.leader_x - self.follower_x
+        actual_distance = self.master_x - self.slave_x
         distance_error = actual_distance - self.desired_distance
 
         self.writer.writerow([
             current_time,
-            self.leader_x,
-            self.follower_x,
+            self.master_x,
+            self.slave_x,
             distance_error
         ])
 
@@ -68,8 +66,8 @@ class DataLogger(Node):
 
         self.get_logger().info(
             f't: {current_time:.2f} | '
-            f'Leader: {self.leader_x:.2f} | '
-            f'Follower: {self.follower_x:.2f} | '
+            f'Master: {self.master_x:.2f} | '
+            f'Slave: {self.slave_x:.2f} | '
             f'Error: {distance_error:.2f}'
         )
 
