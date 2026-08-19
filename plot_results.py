@@ -13,11 +13,11 @@ data = pd.read_csv('platooning_data_packet_loss.csv')
 
 time = data['time']
 
-leader_position = data['leader_position']
-follower_position = data['follower_position']
+master_position = data['master_position']
+slave_position = data['slave_position']
 
-leader_velocity = data['leader_velocity']
-follower_velocity = data['follower_velocity']
+master_velocity = data['master_velocity']
+slave_velocity = data['slave_velocity']
 
 distance_error = data['distance_error']
 
@@ -27,8 +27,8 @@ distance_error = data['distance_error']
 
 plt.figure(figsize=(8,5))
 
-plt.plot(time, leader_position, label='Leader Position')
-plt.plot(time, follower_position, label='Follower Position')
+plt.plot(time, master_position, label='Master Position')
+plt.plot(time, slave_position, label='Slave Position')
 
 plt.xlabel('Time (s)')
 plt.ylabel('Position (m)')
@@ -46,8 +46,8 @@ plt.show()
 
 plt.figure(figsize=(8,5))
 
-plt.plot(time, leader_velocity, label='Leader Velocity')
-plt.plot(time, follower_velocity, label='Follower Velocity')
+plt.plot(time, master_velocity, label='Master Velocity')
+plt.plot(time, slave_velocity, label='Slave Velocity')
 
 plt.xlabel('Time (s)')
 plt.ylabel('Velocity (m/s)')

@@ -1,4 +1,4 @@
-time,leader_position,follower_position,distance_error
+time,master_position,slave_position,distance_error
 0.1103665828704834,0.0,0.0,-5.0
 0.21052932739257812,0.0,0.0,-5.0
 0.31032633781433105,0.0,0.0,-5.0
