@@ -15,6 +15,14 @@ class DataLogger(Node):
 
         self.master_x = 0.0
         self.slave_x = 0.0
+
+        self.previous_master_x = 0.0
+        self.previous_slave_x = 0.0
+        self.previous_time = 0.0
+
+        self.master_velocity = 0.0
+        self.slave_velocity = 0.0
+
         self.desired_distance = 5.0
 
         self.file = open('gazebo_platooning_data.csv', 'w', newline='')
@@ -24,6 +32,8 @@ class DataLogger(Node):
             'time',
             'master_position',
             'slave_position',
+            'master_velocity',
+            'slave_velocity',
             'distance_error'
         ])
 
@@ -51,6 +61,16 @@ class DataLogger(Node):
 
     def log_data(self):
         current_time = time.time() - self.start_time
+        dt = current_time - self.previous_time
+
+        if dt > 0.0:
+            self.master_velocity = (
+                self.master_x - self.previous_master_x
+            ) / dt
+
+            self.slave_velocity = (
+                self.slave_x - self.previous_slave_x
+            ) / dt
 
         actual_distance = self.master_x - self.slave_x
         distance_error = actual_distance - self.desired_distance
@@ -59,6 +79,8 @@ class DataLogger(Node):
             current_time,
             self.master_x,
             self.slave_x,
+            self.master_velocity,
+            self.slave_velocity,
             distance_error
         ])
 
@@ -66,10 +88,16 @@ class DataLogger(Node):
 
         self.get_logger().info(
             f't: {current_time:.2f} | '
-            f'Master: {self.master_x:.2f} | '
-            f'Slave: {self.slave_x:.2f} | '
+            f'Master Pos: {self.master_x:.2f} | '
+            f'Slave Pos: {self.slave_x:.2f} | '
+            f'Master Vel: {self.master_velocity:.2f} | '
+            f'Slave Vel: {self.slave_velocity:.2f} | '
             f'Error: {distance_error:.2f}'
         )
+
+        self.previous_master_x = self.master_x
+        self.previous_slave_x = self.slave_x
+        self.previous_time = current_time
 
     def destroy_node(self):
         self.file.close()
