@@ -6,13 +6,13 @@ ROS2 and Gazebo implementation of a vehicle platooning system for the evaluation
 
 This repository contains the implementation developed for the study of vehicle platooning under non-ideal Vehicle-to-Vehicle (V2V) communication conditions.
 
-The project was developed using ROS2 Jazzy, Python and Gazebo Sim. The implemented system consists of a Leader vehicle and a Follower vehicle. The Leader communicates its state through ROS2 topics, while the Follower uses the received information to determine its motion and maintain the desired inter-vehicle distance.
+The project was developed using ROS2 Jazzy, Python and Gazebo Sim. The implemented system consists of a Master vehicle and a Slave vehicle. The Master communicates its state through ROS2 topics, while the Slave uses the received information to determine its motion and maintain the desired inter-vehicle distance.
 
 The implementation includes:
 
 - ROS2-based vehicle platooning simulation
 - Gazebo-based vehicle platooning simulation
-- Leader and Follower ROS2 nodes
+- Master and Slave ROS2 nodes
 - Platooning control algorithms
 - Communication delay simulation
 - Packet loss simulation
@@ -50,10 +50,10 @@ PlatoonXlrt/
 ├── src/
 │   ├── platooning_pkg/
 │   │   ├── platooning_pkg/
-│   │   │   ├── leader_node.py
-│   │   │   ├── follower_node.py
-│   │   │   ├── gazebo_leader.py
-│   │   │   ├── gazebo_follower.py
+│   │   │   ├── master_node.py
+│   │   │   ├── slave_node.py
+│   │   │   ├── gazebo_master.py
+│   │   │   ├── gazebo_slave.py
 │   │   │   └── data_logger.py
 │   │   ├── package.xml
 │   │   └── setup.py
@@ -77,33 +77,33 @@ PlatoonXlrt/
 
 The first implementation consists of two ROS2 nodes:
 
-- `leader_node.py`
-- `follower_node.py`
+- `master_node.py`
+- `slave_node.py`
 
-## Leader Node
+## Master Node
 
-The Leader Node publishes:
+The Master Node publishes:
 
 ```text
-/leader_velocity
-/leader_position
+/master_velocity
+/master_position
 ```
 
-The Leader starts with an initial velocity of 20 m/s.
+The Master starts with an initial velocity of 20 m/s.
 
-Between 10 s and 15 s, a deceleration of -1.5 m/s² is applied. This creates a change in the Leader motion that the Follower must respond to.
+Between 10 s and 15 s, a deceleration of -1.5 m/s² is applied. This creates a change in the Master motion that the Slave must respond to.
 
 The simulation is updated every 0.1 s.
 
-## Follower Node
+## Slave Node
 
-The Follower subscribes to the Leader position and velocity.
+The Slave subscribes to the Master position and velocity.
 
 Initial conditions:
 
 ```text
-Follower velocity = 18 m/s
-Follower position = -15 m
+Slave velocity = 18 m/s
+Slave position = -15 m
 ```
 
 Controller parameters:
@@ -119,25 +119,25 @@ dt = 0.1 s
 The desired distance is calculated using a constant-time-headway spacing policy:
 
 ```text
-desired_distance = d0 + h * follower_velocity
+desired_distance = d0 + h * slave_velocity
 ```
 
 The distance error is:
 
 ```text
-actual_distance = leader_position - follower_position
+actual_distance = master_position - slave_position
 error = actual_distance - desired_distance
 ```
 
-The Follower acceleration is calculated as:
+The Slave acceleration is calculated as:
 
 ```text
 acceleration =
     Kp * error +
-    Kv * (leader_velocity - follower_velocity)
+    Kv * (master_velocity - slave_velocity)
 ```
 
-The Follower Node also contains a packet-loss mechanism based on random message dropping.
+The Slave Node also contains a packet-loss mechanism based on random message dropping.
 
 Simulation results are recorded in CSV format and can be visualized using:
 
@@ -147,8 +147,8 @@ python3 plot_results.py
 
 The generated plots include:
 
-- Leader and Follower positions
-- Leader and Follower velocities
+- Master and Slave positions
+- Master and Slave velocities
 - Distance error
 
 ---
@@ -159,8 +159,8 @@ A second implementation was developed using ROS2 and Gazebo Sim.
 
 The Gazebo simulation contains two simplified vehicle models:
 
-- `leader_vehicle`
-- `follower_vehicle`
+- `master_vehicle`
+- `slave_vehicle`
 
 The simulation world is defined in:
 
@@ -168,13 +168,13 @@ The simulation world is defined in:
 src/platoon_gazebo/worlds/platoon_world.sdf
 ```
 
-The Leader initially starts at:
+The Master initially starts at:
 
 ```text
 x = 0 m
 ```
 
-and the Follower at:
+and the Slave at:
 
 ```text
 x = -8 m
@@ -186,20 +186,18 @@ The desired inter-vehicle distance is:
 d0 = 5.0 m
 ```
 
----
+## Gazebo Master
 
-## Gazebo Leader
-
-The Gazebo Leader is implemented in:
+The Gazebo Master is implemented in:
 
 ```text
-gazebo_leader.py
+gazebo_master.py
 ```
 
-The node publishes the Leader pose through:
+The node publishes the Master pose through:
 
 ```text
-/leader_gazebo_pose
+/master_gazebo_pose
 ```
 
 Message type:
@@ -208,7 +206,7 @@ Message type:
 geometry_msgs/msg/Pose
 ```
 
-The Leader moves with constant velocity:
+The Master moves with constant velocity:
 
 ```text
 0.2 m/s
@@ -222,41 +220,39 @@ with an update period of:
 
 Its pose in Gazebo is updated through the Gazebo `/set_pose` service.
 
----
+## Gazebo Slave
 
-## Gazebo Follower
-
-The Gazebo Follower is implemented in:
+The Gazebo Slave is implemented in:
 
 ```text
-gazebo_follower.py
+gazebo_slave.py
 ```
 
 It subscribes to:
 
 ```text
-/leader_gazebo_pose
+/master_gazebo_pose
 ```
 
 and publishes:
 
 ```text
-/follower_gazebo_pose
+/slave_gazebo_pose
 ```
 
-The controller uses the desired Leader-relative position:
+The controller uses the desired Master-relative position:
 
 ```text
-desired_x = leader_x - d0
+desired_x = master_x - d0
 ```
 
 The position error is:
 
 ```text
-error = desired_x - follower_x
+error = desired_x - slave_x
 ```
 
-and the Follower velocity command is calculated using:
+and the Slave velocity command is calculated using:
 
 ```text
 velocity = Kp * error
@@ -274,7 +270,7 @@ dt = 0.1 s
 
 # 3. Communication Impairments
 
-Communication limitations were introduced in the `gazebo_follower.py` node in order to evaluate the performance of the platooning system under non-ideal V2V communication.
+Communication limitations were introduced in the `gazebo_slave.py` node in order to evaluate the performance of the platooning system under non-ideal V2V communication.
 
 The two parameters are:
 
@@ -284,8 +280,6 @@ self.packet_loss_probability = 0.0
 ```
 
 The default configuration corresponds to the baseline scenario with no communication delay and no packet loss.
-
----
 
 ## 3.1 Baseline
 
@@ -297,8 +291,6 @@ self.packet_loss_probability = 0.0
 ```
 
 This represents ideal communication conditions.
-
----
 
 ## 3.2 Communication Delay Experiments
 
@@ -326,9 +318,7 @@ self.communication_delay = 0.5
 self.communication_delay = 1.0
 ```
 
-The delay is applied when Leader messages are received by the Follower.
-
----
+The delay is applied when Master messages are received by the Slave.
 
 ## 3.3 Packet Loss Experiments
 
@@ -356,9 +346,9 @@ self.packet_loss_probability = 0.2
 self.packet_loss_probability = 0.4
 ```
 
-Packet loss is implemented by randomly discarding received Leader messages.
+Packet loss is implemented by randomly discarding received Master messages.
 
-When a message is discarded, the Follower continues operating using the most recently received Leader information.
+When a message is discarded, the Slave continues operating using the most recently received Master information.
 
 ---
 
@@ -400,9 +390,7 @@ From the repository root, run:
 gz sim -r src/platoon_gazebo/worlds/platoon_world.sdf
 ```
 
-The Gazebo environment should open with the Leader and Follower vehicles.
-
----
+The Gazebo environment should open with the Master and Slave vehicles.
 
 ## Step 2 - Start the ROS2 Nodes
 
@@ -424,12 +412,12 @@ ros2 launch platoon_gazebo platoon_sim.launch.py
 The launch file starts:
 
 ```text
-gazebo_leader
-gazebo_follower
+gazebo_master
+gazebo_slave
 data_logger
 ```
 
-The Leader and Follower should now move in the Gazebo environment.
+The Master and Slave should now move in the Gazebo environment.
 
 ---
 
@@ -438,8 +426,8 @@ The Leader and Follower should now move in the Gazebo environment.
 The `data_logger.py` node subscribes to:
 
 ```text
-/leader_gazebo_pose
-/follower_gazebo_pose
+/master_gazebo_pose
+/slave_gazebo_pose
 ```
 
 Data are recorded every 0.1 s.
@@ -448,15 +436,15 @@ The following variables are stored:
 
 ```text
 time
-leader_position
-follower_position
+master_position
+slave_position
 distance_error
 ```
 
 The distance error is calculated as:
 
 ```text
-actual_distance = leader_position - follower_position
+actual_distance = master_position - slave_position
 distance_error = actual_distance - desired_distance
 ```
 
@@ -503,7 +491,7 @@ gazebo_positions.png
 gazebo_distance_error.png
 ```
 
-The first plot compares the Leader and Follower positions.
+The first plot compares the Master and Slave positions.
 
 The second plot presents the distance error over time.
 
@@ -515,7 +503,7 @@ The following procedure can be used to reproduce each experiment.
 
 ## Baseline
 
-Set in `gazebo_follower.py`:
+Set in `gazebo_slave.py`:
 
 ```python
 self.communication_delay = 0.0
@@ -530,8 +518,6 @@ source install/setup.bash
 ```
 
 Start Gazebo and the ROS2 nodes and collect the results.
-
----
 
 ## Delay Experiments
 
@@ -555,8 +541,6 @@ After changing the source code, rebuild and source the workspace before running 
 colcon build
 source install/setup.bash
 ```
-
----
 
 ## Packet Loss Experiments
 
@@ -592,7 +576,7 @@ The experiments allow comparison between:
 
 The main performance indicator is the inter-vehicle distance error.
 
-The results show how increasing communication impairment affects the ability of the Follower to maintain the desired distance from the Leader.
+The results show how increasing communication impairment affects the ability of the Slave to maintain the desired distance from the Master.
 
 ---
 
