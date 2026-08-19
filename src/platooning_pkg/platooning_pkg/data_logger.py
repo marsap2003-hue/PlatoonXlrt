@@ -1,5 +1,6 @@
 import csv
 import time
+import os
 
 import rclpy
 from rclpy.node import Node
@@ -17,7 +18,8 @@ class DataLogger(Node):
         self.follower_x = 0.0
         self.desired_distance = 5.0
 
-        self.file = open('/home/ms/ros2_ws/gazebo_platooning_data.csv', 'w', newline='')
+        output_file = os.path.join(os.getcwd(), 'gazebo_platooning_data.csv')
+        self.file = open(output_file, 'w', newline='')
         self.writer = csv.writer(self.file)
 
         self.writer.writerow([
