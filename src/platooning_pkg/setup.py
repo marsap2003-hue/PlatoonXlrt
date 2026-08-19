@@ -20,10 +20,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'leader_node = platooning_pkg.leader_node:main',
-            'follower_node = platooning_pkg.follower_node:main',
-            'gazebo_leader = platooning_pkg.gazebo_leader:main',
-            'gazebo_follower = platooning_pkg.gazebo_follower:main',
+            'master_node = platooning_pkg.master_node:main',
+            'slave_node = platooning_pkg.slave_node:main',
+            'gazebo_master = platooning_pkg.gazebo_master:main',
+            'gazebo_slave = platooning_pkg.gazebo_slave:main',
             'data_logger = platooning_pkg.data_logger:main',
         ],
     },
