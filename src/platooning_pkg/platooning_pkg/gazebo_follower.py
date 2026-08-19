@@ -32,6 +32,10 @@ class GazeboFollower(Node):
         self.d0 = 5.0
         self.kp = 0.5
         self.dt = 0.1
+        # Communication impairment parameters
+        # Baseline configuration: no delay and no packet loss
+        self.communication_delay = 0.0
+        self.packet_loss_probability = 0.0
 
         self.timer = self.create_timer(
             self.dt,
@@ -39,10 +43,10 @@ class GazeboFollower(Node):
         )
 
 def leader_callback(self, msg):
-    time.sleep(0.0)
+time.sleep(self.communication_delay)
 
-    if random.random() < 0.0:
-        return
+if random.random() < self.packet_loss_probability:
+    return
 
     self.leader_x = msg.position.x
     self.leader_y = msg.position.y
