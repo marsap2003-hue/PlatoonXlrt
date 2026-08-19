@@ -3,20 +3,20 @@ from rclpy.node import Node
 from std_msgs.msg import Float32
 
 
-class LeaderNode(Node):
+class MasterNode(Node):
 
     def __init__(self):
-        super().__init__('leader_node')
+        super().__init__('master_node')
 
         self.velocity_publisher = self.create_publisher(
             Float32,
-            '/leader_velocity',
+            '/master_velocity',
             10
         )
 
         self.position_publisher = self.create_publisher(
             Float32,
-            '/leader_position',
+            '/master_position',
             10
         )
 
@@ -54,16 +54,16 @@ class LeaderNode(Node):
         self.position_publisher.publish(position_msg)
 
         self.get_logger().info(
-            f'Leader time: {self.time:.2f} | '
-            f'Leader position: {self.position:.2f} | '
-            f'Leader velocity: {self.velocity:.2f}'
+            f'Master time: {self.time:.2f} | '
+            f'Master position: {self.position:.2f} | '
+            f'Master velocity: {self.velocity:.2f}'
         )
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    node = LeaderNode()
+    node = MasterNode()
 
     rclpy.spin(node)
 
