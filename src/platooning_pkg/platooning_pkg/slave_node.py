@@ -5,16 +5,16 @@ import csv
 import random
 
 
-class FollowerNode(Node):
+class SlaveNode(Node):
 
     def __init__(self):
-        super().__init__('follower_node')
+        super().__init__('slave_node')
 
-        self.leader_velocity = 0.0
-        self.leader_position = 0.0
+        self.master_velocity = 0.0
+        self.master_position = 0.0
 
-        self.follower_velocity = 18.0
-        self.follower_position = -15.0
+        self.slave_velocity = 18.0
+        self.slave_position = -15.0
 
         self.kp = 0.5
         self.kv = 0.8
@@ -29,23 +29,23 @@ class FollowerNode(Node):
         self.csv_writer = csv.writer(self.csv_file)
         self.csv_writer.writerow([
             'time',
-            'leader_position',
-            'follower_position',
-            'leader_velocity',
-            'follower_velocity',
+            'master_position',
+            'slave_position',
+            'master_velocity',
+            'slave_velocity',
             'distance_error'
         ])
 
         self.velocity_subscription = self.create_subscription(
             Float32,
-            '/leader_velocity',
+            '/master_velocity',
             self.velocity_callback,
             10
         )
 
         self.position_subscription = self.create_subscription(
             Float32,
-            '/leader_position',
+            '/master_position',
             self.position_callback,
             10
         )
@@ -60,43 +60,43 @@ class FollowerNode(Node):
             self.get_logger().info('Velocity packet lost!')
             return
 
-        self.leader_velocity = msg.data
+        self.master_velocity = msg.data
 
     def position_callback(self, msg):
         if random.random() < self.packet_loss_probability:
             self.get_logger().info('Position packet lost!')
             return
 
-        self.leader_position = msg.data
+        self.master_position = msg.data
 
     def control_loop(self):
         self.time = self.time + self.dt
 
-        desired_distance = self.d0 + self.h * self.follower_velocity
-        actual_distance = self.leader_position - self.follower_position
+        desired_distance = self.d0 + self.h * self.slave_velocity
+        actual_distance = self.master_position - self.slave_position
         error = actual_distance - desired_distance
 
         acceleration = (
             self.kp * error +
-            self.kv * (self.leader_velocity - self.follower_velocity)
+            self.kv * (self.master_velocity - self.slave_velocity)
         )
 
-        self.follower_velocity = self.follower_velocity + acceleration * self.dt
-        self.follower_position = self.follower_position + self.follower_velocity * self.dt
+        self.slave_velocity = self.slave_velocity + acceleration * self.dt
+        self.slave_position = self.slave_position + self.slave_velocity * self.dt
 
         self.csv_writer.writerow([
             self.time,
-            self.leader_position,
-            self.follower_position,
-            self.leader_velocity,
-            self.follower_velocity,
+            self.master_position,
+            self.slave_position,
+            self.master_velocity,
+            self.slave_velocity,
             error
         ])
         self.csv_file.flush()
 
         self.get_logger().info(
-            f'Leader Pos: {self.leader_position:.2f} | '
-            f'Follower Pos: {self.follower_position:.2f} | '
+            f'Master Pos: {self.master_position:.2f} | '
+            f'Slave Pos: {self.slave_position:.2f} | '
             f'Distance Error: {error:.2f}'
         )
 
@@ -108,7 +108,7 @@ class FollowerNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    node = FollowerNode()
+    node = SlaveNode()
 
     rclpy.spin(node)
 
