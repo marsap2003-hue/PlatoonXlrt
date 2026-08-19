@@ -38,13 +38,14 @@ class GazeboFollower(Node):
             self.update_position
         )
 
-    def leader_callback(self, msg):
-        time.sleep(0.0)
+def leader_callback(self, msg):
+    time.sleep(0.0)
 
-        if random.random() < 0.4:
-            return
-        self.leader_x = msg.position.x
-        self.leader_y = msg.position.y
+    if random.random() < 0.0:
+        return
+
+    self.leader_x = msg.position.x
+    self.leader_y = msg.position.y
 
     def update_position(self):
 
