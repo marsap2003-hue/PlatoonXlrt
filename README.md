@@ -1,223 +1,598 @@
 # PlatoonXlrt
 
-ROS2/Gazebo simulation of a simple vehicle platooning system with communication delay and packet loss evaluation.
+ROS2 and Gazebo implementation of a vehicle platooning system for the evaluation of communication delays and packet losses.
 
 ## Overview
 
-This project implements a vehicle platooning system using ROS2 and Gazebo. Two vehicles are simulated:
+This repository contains the implementation developed for the study of vehicle platooning under non-ideal Vehicle-to-Vehicle (V2V) communication conditions.
 
-- Leader vehicle
-- Follower vehicle
+The project was developed using ROS2 Jazzy, Python and Gazebo Sim. The implemented system consists of a Leader vehicle and a Follower vehicle. The Leader communicates its state through ROS2 topics, while the Follower uses the received information to determine its motion and maintain the desired inter-vehicle distance.
 
-The leader moves with constant velocity and publishes its position through ROS2 topics. The follower receives the leader position and applies a proportional control law to maintain a desired inter-vehicle distance.
+The implementation includes:
 
-The effect of communication impairments is evaluated by introducing:
+- ROS2-based vehicle platooning simulation
+- Gazebo-based vehicle platooning simulation
+- Leader and Follower ROS2 nodes
+- Platooning control algorithms
+- Communication delay simulation
+- Packet loss simulation
+- Data logging to CSV files
+- Python scripts for result visualization and analysis
 
-- Communication delays (200 ms, 500 ms, 1000 ms)
-- Packet loss (10%, 20%, 40%)
+The communication experiments investigate:
 
-Simulation data are logged and exported to CSV files for post-processing and visualization.
+- Baseline: 0 ms delay, 0% packet loss
+- Communication delay: 200 ms, 500 ms and 1000 ms
+- Packet loss: 10%, 20% and 40%
 
 ---
 
 ## Software Environment
+
+The project was developed and tested using:
 
 - Ubuntu 24.04
 - ROS2 Jazzy
 - Gazebo Sim
 - Python 3
 
+Python libraries used for data processing and visualization include:
+
+- pandas
+- matplotlib
+
 ---
 
-## Workspace Structure
+## Repository Structure
 
 ```text
-ros2_ws/
+PlatoonXlrt/
 ├── src/
 │   ├── platooning_pkg/
+│   │   ├── platooning_pkg/
+│   │   │   ├── leader_node.py
+│   │   │   ├── follower_node.py
+│   │   │   ├── gazebo_leader.py
+│   │   │   ├── gazebo_follower.py
+│   │   │   └── data_logger.py
+│   │   ├── package.xml
+│   │   └── setup.py
+│   │
 │   └── platoon_gazebo/
-├── gazebo_platooning_data.csv
+│       ├── launch/
+│       │   └── platoon_sim.launch.py
+│       ├── worlds/
+│       │   └── platoon_world.sdf
+│       ├── package.xml
+│       └── setup.py
+│
+├── plot_results.py
 ├── plot_gazebo_results.py
-└── plot_results.py
+└── README.md
 ```
 
-## Main Files
+---
 
-### platooning_pkg
+# 1. ROS2 Platooning Implementation
 
-#### gazebo_leader.py
+The first implementation consists of two ROS2 nodes:
 
-Leader vehicle node.
+- `leader_node.py`
+- `follower_node.py`
 
-Responsibilities:
+## Leader Node
 
-- Generates leader motion
-- Publishes leader position
-- Updates leader pose in Gazebo
+The Leader Node publishes:
 
-#### gazebo_follower.py
+```text
+/leader_velocity
+/leader_position
+```
 
-Follower vehicle node.
+The Leader starts with an initial velocity of 20 m/s.
 
-Responsibilities:
+Between 10 s and 15 s, a deceleration of -1.5 m/s² is applied. This creates a change in the Leader motion that the Follower must respond to.
 
-- Receives leader position
-- Computes distance error
-- Applies platooning control law
-- Updates follower pose in Gazebo
+The simulation is updated every 0.1 s.
 
-#### data_logger.py
+## Follower Node
 
-Data acquisition node.
+The Follower subscribes to the Leader position and velocity.
 
-Records:
+Initial conditions:
 
-- Time
-- Leader position
-- Follower position
+```text
+Follower velocity = 18 m/s
+Follower position = -15 m
+```
+
+Controller parameters:
+
+```text
+Kp = 0.5
+Kv = 0.8
+d0 = 5.0 m
+h = 1.0 s
+dt = 0.1 s
+```
+
+The desired distance is calculated using a constant-time-headway spacing policy:
+
+```text
+desired_distance = d0 + h * follower_velocity
+```
+
+The distance error is:
+
+```text
+actual_distance = leader_position - follower_position
+error = actual_distance - desired_distance
+```
+
+The Follower acceleration is calculated as:
+
+```text
+acceleration =
+    Kp * error +
+    Kv * (leader_velocity - follower_velocity)
+```
+
+The Follower Node also contains a packet-loss mechanism based on random message dropping.
+
+Simulation results are recorded in CSV format and can be visualized using:
+
+```bash
+python3 plot_results.py
+```
+
+The generated plots include:
+
+- Leader and Follower positions
+- Leader and Follower velocities
 - Distance error
 
-Data are saved into CSV files.
-
 ---
 
-### platoon_gazebo
+# 2. Gazebo Platooning Implementation
 
-#### platoon_world.sdf
+A second implementation was developed using ROS2 and Gazebo Sim.
 
-Gazebo simulation world.
+The Gazebo simulation contains two simplified vehicle models:
 
-Contains:
+- `leader_vehicle`
+- `follower_vehicle`
 
-- Ground plane
-- Leader vehicle model
-- Follower vehicle model
-
----
-
-## ROS2 Topics
-
-### Published Topics
-
-Leader:
+The simulation world is defined in:
 
 ```text
-/leader_gazebo_pose
+src/platoon_gazebo/worlds/platoon_world.sdf
 ```
 
-Type:
+The Leader initially starts at:
 
 ```text
-geometry_msgs/msg/Pose
+x = 0 m
 ```
 
-Follower:
+and the Follower at:
 
 ```text
-/follower_gazebo_pose
+x = -8 m
 ```
 
-Type:
-
-```text
-geometry_msgs/msg/Pose
-```
-
----
-
-## Platooning Control Law
-
-Desired distance:
+The desired inter-vehicle distance is:
 
 ```text
 d0 = 5.0 m
 ```
 
-Proportional gain:
+---
+
+## Gazebo Leader
+
+The Gazebo Leader is implemented in:
 
 ```text
-Kp = 0.5
+gazebo_leader.py
 ```
 
-Control equation:
+The node publishes the Leader pose through:
 
 ```text
-desired_position = leader_position - d0
+/leader_gazebo_pose
+```
 
-error = desired_position - follower_position
+Message type:
 
+```text
+geometry_msgs/msg/Pose
+```
+
+The Leader moves with constant velocity:
+
+```text
+0.2 m/s
+```
+
+with an update period of:
+
+```text
+0.1 s
+```
+
+Its pose in Gazebo is updated through the Gazebo `/set_pose` service.
+
+---
+
+## Gazebo Follower
+
+The Gazebo Follower is implemented in:
+
+```text
+gazebo_follower.py
+```
+
+It subscribes to:
+
+```text
+/leader_gazebo_pose
+```
+
+and publishes:
+
+```text
+/follower_gazebo_pose
+```
+
+The controller uses the desired Leader-relative position:
+
+```text
+desired_x = leader_x - d0
+```
+
+The position error is:
+
+```text
+error = desired_x - follower_x
+```
+
+and the Follower velocity command is calculated using:
+
+```text
 velocity = Kp * error
 ```
 
----
+where:
 
-## Communication Delay Experiments
-
-Artificial communication delays were introduced inside the follower node using:
-
-```python
-time.sleep(...)
+```text
+Kp = 0.5
+d0 = 5.0 m
+dt = 0.1 s
 ```
 
-Tested values:
-
-- 200 ms
-- 500 ms
-- 1000 ms
-
 ---
 
-## Packet Loss Experiments
+# 3. Communication Impairments
 
-Packet loss was simulated through random message dropping:
+Communication limitations were introduced in the `gazebo_follower.py` node in order to evaluate the performance of the platooning system under non-ideal V2V communication.
+
+The two parameters are:
 
 ```python
-if random.random() < p:
-    return
+self.communication_delay = 0.0
+self.packet_loss_probability = 0.0
 ```
 
-Tested values:
-
-- 10 %
-- 20 %
-- 40 %
+The default configuration corresponds to the baseline scenario with no communication delay and no packet loss.
 
 ---
 
-## Running the Simulation
+## 3.1 Baseline
 
-### Build
+Use:
+
+```python
+self.communication_delay = 0.0
+self.packet_loss_probability = 0.0
+```
+
+This represents ideal communication conditions.
+
+---
+
+## 3.2 Communication Delay Experiments
+
+For the delay experiments, packet loss remains disabled:
+
+```python
+self.packet_loss_probability = 0.0
+```
+
+### 200 ms
+
+```python
+self.communication_delay = 0.2
+```
+
+### 500 ms
+
+```python
+self.communication_delay = 0.5
+```
+
+### 1000 ms
+
+```python
+self.communication_delay = 1.0
+```
+
+The delay is applied when Leader messages are received by the Follower.
+
+---
+
+## 3.3 Packet Loss Experiments
+
+For the packet-loss experiments, communication delay is disabled:
+
+```python
+self.communication_delay = 0.0
+```
+
+### 10% Packet Loss
+
+```python
+self.packet_loss_probability = 0.1
+```
+
+### 20% Packet Loss
+
+```python
+self.packet_loss_probability = 0.2
+```
+
+### 40% Packet Loss
+
+```python
+self.packet_loss_probability = 0.4
+```
+
+Packet loss is implemented by randomly discarding received Leader messages.
+
+When a message is discarded, the Follower continues operating using the most recently received Leader information.
+
+---
+
+# 4. Building the ROS2 Workspace
+
+Clone the repository:
 
 ```bash
-cd ~/ros2_ws
+git clone https://github.com/marsap2003-hue/PlatoonXlrt.git
+```
+
+Enter the repository:
+
+```bash
+cd PlatoonXlrt
+```
+
+Build the ROS2 packages:
+
+```bash
 colcon build
+```
+
+Source the workspace:
+
+```bash
 source install/setup.bash
 ```
 
-### Start Gazebo
+---
+
+# 5. Running the Gazebo Simulation
+
+## Step 1 - Start Gazebo
+
+From the repository root, run:
 
 ```bash
-gz sim -r ~/ros2_ws/src/platoon_gazebo/worlds/platoon_world.sdf
+gz sim -r src/platoon_gazebo/worlds/platoon_world.sdf
 ```
 
-### Start ROS2 Nodes
+The Gazebo environment should open with the Leader and Follower vehicles.
+
+---
+
+## Step 2 - Start the ROS2 Nodes
+
+Open a second terminal.
+
+Navigate to the repository and source the workspace:
+
+```bash
+cd PlatoonXlrt
+source install/setup.bash
+```
+
+Run:
 
 ```bash
 ros2 launch platoon_gazebo platoon_sim.launch.py
 ```
 
+The launch file starts:
+
+```text
+gazebo_leader
+gazebo_follower
+data_logger
+```
+
+The Leader and Follower should now move in the Gazebo environment.
+
 ---
 
-## Output Data
+# 6. Data Logging
 
-Simulation results are stored in CSV files and later processed using Python scripts.
+The `data_logger.py` node subscribes to:
 
-Generated plots include:
+```text
+/leader_gazebo_pose
+/follower_gazebo_pose
+```
 
-- Vehicle positions
-- Distance error
-- Delay impact
-- Packet loss impact
+Data are recorded every 0.1 s.
+
+The following variables are stored:
+
+```text
+time
+leader_position
+follower_position
+distance_error
+```
+
+The distance error is calculated as:
+
+```text
+actual_distance = leader_position - follower_position
+distance_error = actual_distance - desired_distance
+```
+
+with:
+
+```text
+desired_distance = 5.0 m
+```
+
+The results are stored in:
+
+```text
+gazebo_platooning_data.csv
+```
+
+Note: the CSV file is opened in write mode. Therefore, a new simulation run replaces the previous contents of the file. Save or rename the CSV file after each experiment if the results need to be preserved.
+
+---
+
+# 7. Generating the Gazebo Plots
+
+After completing a simulation, stop the ROS2 nodes using:
+
+```text
+Ctrl+C
+```
+
+Then run:
+
+```bash
+python3 plot_gazebo_results.py
+```
+
+The script reads:
+
+```text
+gazebo_platooning_data.csv
+```
+
+and generates:
+
+```text
+gazebo_positions.png
+gazebo_distance_error.png
+```
+
+The first plot compares the Leader and Follower positions.
+
+The second plot presents the distance error over time.
+
+---
+
+# 8. Reproducing the Experimental Scenarios
+
+The following procedure can be used to reproduce each experiment.
+
+## Baseline
+
+Set in `gazebo_follower.py`:
+
+```python
+self.communication_delay = 0.0
+self.packet_loss_probability = 0.0
+```
+
+Build and source the workspace:
+
+```bash
+colcon build
+source install/setup.bash
+```
+
+Start Gazebo and the ROS2 nodes and collect the results.
+
+---
+
+## Delay Experiments
+
+Repeat the simulation using:
+
+```text
+200 ms  -> communication_delay = 0.2
+500 ms  -> communication_delay = 0.5
+1000 ms -> communication_delay = 1.0
+```
+
+with:
+
+```python
+self.packet_loss_probability = 0.0
+```
+
+After changing the source code, rebuild and source the workspace before running the next experiment:
+
+```bash
+colcon build
+source install/setup.bash
+```
+
+---
+
+## Packet Loss Experiments
+
+Repeat the simulation using:
+
+```text
+10% -> packet_loss_probability = 0.1
+20% -> packet_loss_probability = 0.2
+40% -> packet_loss_probability = 0.4
+```
+
+with:
+
+```python
+self.communication_delay = 0.0
+```
+
+Again, rebuild and source the workspace after changing the parameters.
+
+---
+
+# 9. Experimental Outputs
+
+The experiments allow comparison between:
+
+- Baseline operation
+- 200 ms communication delay
+- 500 ms communication delay
+- 1000 ms communication delay
+- 10% packet loss
+- 20% packet loss
+- 40% packet loss
+
+The main performance indicator is the inter-vehicle distance error.
+
+The results show how increasing communication impairment affects the ability of the Follower to maintain the desired distance from the Leader.
 
 ---
 
@@ -225,6 +600,5 @@ Generated plots include:
 
 Marios Saparillas
 
-Department of Electrical and Computer Engineering
-
+Department of Electrical and Computer Engineering  
 Cyprus University of Technology
