@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64MultiArray
 
 
 class MasterNode(Node):
@@ -8,20 +8,15 @@ class MasterNode(Node):
     def __init__(self):
         super().__init__('master_node')
 
-        self.velocity_publisher = self.create_publisher(
-            Float32,
-            '/master_velocity',
-            10
-        )
-
-        self.position_publisher = self.create_publisher(
-            Float32,
-            '/master_position',
+        self.state_publisher = self.create_publisher(
+            Float64MultiArray,
+            '/master_state',
             10
         )
 
         self.velocity = 20.0
         self.position = 0.0
+
         self.dt = 0.1
         self.time = 0.0
 
@@ -31,36 +26,42 @@ class MasterNode(Node):
         )
 
     def publish_data(self):
-        self.time = self.time + self.dt
 
+        self.time += self.dt
+
+        # Leader disturbance
         if 10.0 <= self.time < 15.0:
             acceleration = -1.5
         else:
             acceleration = 0.0
 
-        self.velocity = self.velocity + acceleration * self.dt
+        self.velocity += acceleration * self.dt
 
         if self.velocity < 0.0:
             self.velocity = 0.0
 
-        self.position = self.position + self.velocity * self.dt
+        self.position += self.velocity * self.dt
 
-        velocity_msg = Float32()
-        velocity_msg.data = self.velocity
-        self.velocity_publisher.publish(velocity_msg)
+        # Position and velocity are transmitted
+        # together as one communication packet
+        state_msg = Float64MultiArray()
 
-        position_msg = Float32()
-        position_msg.data = self.position
-        self.position_publisher.publish(position_msg)
+        state_msg.data = [
+            self.position,
+            self.velocity
+        ]
+
+        self.state_publisher.publish(state_msg)
 
         self.get_logger().info(
             f'Master time: {self.time:.2f} | '
-            f'Master position: {self.position:.2f} | '
-            f'Master velocity: {self.velocity:.2f}'
+            f'Position: {self.position:.2f} | '
+            f'Velocity: {self.velocity:.2f}'
         )
 
 
 def main(args=None):
+
     rclpy.init(args=args)
 
     node = MasterNode()
