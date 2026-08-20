@@ -23,7 +23,7 @@ class SlaveNode(Node):
         self.dt = 0.1
         self.time = 0.0
 
-        self.packet_loss_probability = 0.2
+        self.packet_loss_probability = 0.0
 
         self.csv_file = open('platooning_data_packet_loss.csv', 'w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
