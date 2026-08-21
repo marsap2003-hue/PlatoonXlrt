@@ -1,81 +1,85 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# =========================
-# Load Gazebo CSV data
-# =========================
 
+# Load Gazebo simulation data
 data = pd.read_csv('gazebo_platooning_data.csv')
 
-# =========================
-# Extract variables
-# =========================
-
 time = data['time']
-
 master_position = data['master_position']
 slave_position = data['slave_position']
-
-master_velocity = data['master_velocity']
-slave_velocity = data['slave_velocity']
-
 distance_error = data['distance_error']
 
-# =========================
-# Position plot
-# =========================
 
-plt.figure(figsize=(8, 5))
+# ---------------------------------------------------------
+# Plot 1: Master and Slave positions
+# ---------------------------------------------------------
+plt.figure(figsize=(10, 6))
 
-plt.plot(time, master_position, label='Master Position')
-plt.plot(time, slave_position, label='Slave Position')
+plt.plot(
+    time,
+    master_position,
+    label='Master Position',
+    linewidth=2
+)
+
+plt.plot(
+    time,
+    slave_position,
+    label='Slave Position',
+    linewidth=2
+)
 
 plt.xlabel('Time (s)')
 plt.ylabel('Position (m)')
-plt.title('Gazebo Vehicle Positions')
-
+plt.title('Gazebo Platooning - Vehicle Positions')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
 
-plt.savefig('gazebo_positions.png', dpi=300)
-plt.show()
+plt.savefig(
+    'gazebo_positions.png',
+    dpi=300,
+    bbox_inches='tight'
+)
 
-# =========================
-# Velocity plot
-# =========================
+plt.close()
 
-plt.figure(figsize=(8, 5))
 
-plt.plot(time, master_velocity, label='Master Velocity')
-plt.plot(time, slave_velocity, label='Slave Velocity')
+# ---------------------------------------------------------
+# Plot 2: Inter-vehicle distance error
+# ---------------------------------------------------------
+plt.figure(figsize=(10, 6))
 
-plt.xlabel('Time (s)')
-plt.ylabel('Velocity (m/s)')
-plt.title('Gazebo Vehicle Velocities')
+plt.plot(
+    time,
+    distance_error,
+    label='Distance Error',
+    linewidth=2
+)
 
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-
-plt.savefig('gazebo_velocities.png', dpi=300)
-plt.show()
-
-# =========================
-# Distance error plot
-# =========================
-
-plt.figure(figsize=(8, 5))
-
-plt.plot(time, distance_error, label='Distance Error')
+plt.axhline(
+    y=0.0,
+    linestyle='--',
+    linewidth=1
+)
 
 plt.xlabel('Time (s)')
 plt.ylabel('Distance Error (m)')
-plt.title('Gazebo Distance Error')
-
+plt.title('Gazebo Platooning - Distance Error')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
 
-plt.savefig('gazebo_distance_error.png', dpi=300)
-plt.show()
+plt.savefig(
+    'gazebo_distance_error.png',
+    dpi=300,
+    bbox_inches='tight'
+)
+
+plt.close()
+
+
+print('Gazebo plots generated successfully:')
+print('  gazebo_positions.png')
+print('  gazebo_distance_error.png')
