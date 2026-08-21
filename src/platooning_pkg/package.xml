@@ -1,11 +1,26 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd"
+            schematypens="http://www.w3.org/2001/XMLSchema"?>
+
 <package format="3">
+
   <name>platooning_pkg</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="ms@todo.todo">ms</maintainer>
-  <license>TODO: License declaration</license>
+
+  <description>
+    ROS 2 package for vehicle platooning experiments with communication delay,
+    packet loss, multi-vehicle string stability analysis, and Gazebo visualization.
+  </description>
+
+  <maintainer email="marios.saparillas@example.com">Marios Saparillas</maintainer>
+
+  <license>MIT</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
@@ -15,4 +30,5 @@
   <export>
     <build_type>ament_python</build_type>
   </export>
+
 </package>

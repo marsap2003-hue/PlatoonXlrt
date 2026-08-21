@@ -1,0 +1,24 @@
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# ROS 2 / colcon
+build/
+install/
+log/
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary experiment outputs
+*.log
+*.csv
+
+# Keep curated result datasets inside the repository
+!results/**/*.csv
+
+# Backup / temporary files
+*~
+*.bak

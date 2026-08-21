@@ -1,358 +1,802 @@
 # PlatoonXlrt
 
-ROS2 and Gazebo implementation of a vehicle platooning system for the evaluation of communication delays and packet losses.
+ROS 2 and Gazebo implementation of a vehicle platooning system for the study of communication delay, packet loss, inter-vehicle spacing, and string-stability behaviour.
 
 ## Overview
 
-This repository contains the implementation developed for the study of vehicle platooning under non-ideal Vehicle-to-Vehicle (V2V) communication conditions.
+This repository contains the implementation developed for a vehicle platooning study under non-ideal Vehicle-to-Vehicle (V2V) communication conditions.
 
-The project was developed using ROS2 Jazzy, Python and Gazebo Sim. The implemented system consists of a Master vehicle and a Slave vehicle. The Master communicates its state through ROS2 topics, while the Slave uses the received information to determine its motion and maintain the desired inter-vehicle distance.
+The project was developed using:
 
-The implementation includes:
-
-- ROS2-based vehicle platooning simulation
-- Gazebo-based vehicle platooning simulation
-- Master and Slave ROS2 nodes
-- Platooning control algorithms
-- Communication delay simulation
-- Packet loss simulation
-- Data logging to CSV files
-- Python scripts for result visualization and analysis
-
-The communication experiments investigate:
-
-- Baseline: 0 ms delay, 0% packet loss
-- Communication delay: 200 ms, 500 ms and 1000 ms
-- Packet loss: 10%, 20% and 40%
-
----
-
-## Software Environment
-
-The project was developed and tested using:
-
-- Ubuntu 24.04
-- ROS2 Jazzy
+- ROS 2 Jazzy
+- Python
 - Gazebo Sim
-- Python 3
+- Ubuntu 24.04
 
-Python libraries used for data processing and visualization include:
+The main numerical platooning architecture consists of one Master vehicle and three Slave vehicles:
 
-- pandas
-- matplotlib
+```text
+Master -> Slave 1 -> Slave 2 -> Slave 3
+```
+
+Each Slave follows its immediate predecessor. This predecessor-following topology allows communication impairments and disturbance propagation to be examined along a multi-vehicle string.
+
+The implementation investigates:
+
+- nominal platooning behaviour,
+- deterministic communication delay,
+- stochastic packet loss,
+- multi-vehicle disturbance propagation,
+- string-stability indicators,
+- constant-time-headway spacing,
+- time-headway selection,
+- comparison of original and improved configurations,
+- Gazebo-based platooning visualization.
 
 ---
 
-## Repository Structure
+# 1. System Model
+
+For each Slave vehicle, the longitudinal model used in the numerical implementation is:
 
 ```text
-PlatoonXlrt/
-├── src/
-│   ├── platooning_pkg/
-│   │   ├── platooning_pkg/
-│   │   │   ├── master_node.py
-│   │   │   ├── slave_node.py
-│   │   │   ├── gazebo_master.py
-│   │   │   ├── gazebo_slave.py
-│   │   │   └── data_logger.py
-│   │   ├── package.xml
-│   │   └── setup.py
-│   │
-│   └── platoon_gazebo/
-│       ├── launch/
-│       │   └── platoon_sim.launch.py
-│       ├── worlds/
-│       │   └── platoon_world.sdf
-│       ├── package.xml
-│       └── setup.py
-│
-├── plot_results.py
-├── plot_gazebo_results.py
-└── README.md
+position_dot = velocity
+velocity_dot = acceleration
 ```
 
----
+A constant-time-headway spacing policy is used.
 
-# 1. ROS2 Platooning Implementation
-
-The first implementation consists of two ROS2 nodes:
-
-- `master_node.py`
-- `slave_node.py`
-
-## Master Node
-
-The Master Node publishes:
-
-```text
-/master_velocity
-/master_position
-```
-
-The Master starts with an initial velocity of 20 m/s.
-
-Between 10 s and 15 s, a deceleration of -1.5 m/s² is applied. This creates a change in the Master motion that the Slave must respond to.
-
-The simulation is updated every 0.1 s.
-
-## Slave Node
-
-The Slave subscribes to the Master position and velocity.
-
-Initial conditions:
-
-```text
-Slave velocity = 18 m/s
-Slave position = -15 m
-```
-
-Controller parameters:
-
-```text
-Kp = 0.5
-Kv = 0.8
-d0 = 5.0 m
-h = 1.0 s
-dt = 0.1 s
-```
-
-The desired distance is calculated using a constant-time-headway spacing policy:
+The desired inter-vehicle distance is:
 
 ```text
 desired_distance = d0 + h * slave_velocity
 ```
 
-The distance error is:
-
-```text
-actual_distance = master_position - slave_position
-error = actual_distance - desired_distance
-```
-
-The Slave acceleration is calculated as:
-
-```text
-acceleration =
-    Kp * error +
-    Kv * (master_velocity - slave_velocity)
-```
-
-The Slave Node also contains a packet-loss mechanism based on random message dropping.
-
-Simulation results are recorded in CSV format and can be visualized using:
-
-```bash
-python3 plot_results.py
-```
-
-The generated plots include:
-
-- Master and Slave positions
-- Master and Slave velocities
-- Distance error
-
----
-
-# 2. Gazebo Platooning Implementation
-
-A second implementation was developed using ROS2 and Gazebo Sim.
-
-The Gazebo simulation contains two simplified vehicle models:
-
-- `master_vehicle`
-- `slave_vehicle`
-
-The simulation world is defined in:
-
-```text
-src/platoon_gazebo/worlds/platoon_world.sdf
-```
-
-The Master initially starts at:
-
-```text
-x = 0 m
-```
-
-and the Slave at:
-
-```text
-x = -8 m
-```
-
-The desired inter-vehicle distance is:
-
-```text
-d0 = 5.0 m
-```
-
-## Gazebo Master
-
-The Gazebo Master is implemented in:
-
-```text
-gazebo_master.py
-```
-
-The node publishes the Master pose through:
-
-```text
-/master_gazebo_pose
-```
-
-Message type:
-
-```text
-geometry_msgs/msg/Pose
-```
-
-The Master moves with constant velocity:
-
-```text
-0.2 m/s
-```
-
-with an update period of:
-
-```text
-0.1 s
-```
-
-Its pose in Gazebo is updated through the Gazebo `/set_pose` service.
-
-## Gazebo Slave
-
-The Gazebo Slave is implemented in:
-
-```text
-gazebo_slave.py
-```
-
-It subscribes to:
-
-```text
-/master_gazebo_pose
-```
-
-and publishes:
-
-```text
-/slave_gazebo_pose
-```
-
-The controller uses the desired Master-relative position:
-
-```text
-desired_x = master_x - d0
-```
-
-The position error is:
-
-```text
-error = desired_x - slave_x
-```
-
-and the Slave velocity command is calculated using:
-
-```text
-velocity = Kp * error
-```
-
 where:
 
 ```text
-Kp = 0.5
 d0 = 5.0 m
+```
+
+and `h` is the time headway.
+
+The actual distance from the predecessor is:
+
+```text
+actual_distance =
+    predecessor_position - slave_position
+```
+
+The spacing error is:
+
+```text
+distance_error =
+    actual_distance - desired_distance
+```
+
+The relative velocity error is:
+
+```text
+velocity_error =
+    predecessor_velocity - slave_velocity
+```
+
+The longitudinal control input is calculated as:
+
+```text
+acceleration =
+    Kp * distance_error +
+    Kv * velocity_error
+```
+
+with controller parameters:
+
+```text
+Kp = 0.5
+Kv = 0.8
 dt = 0.1 s
 ```
 
 ---
 
-# 3. Communication Impairments
+# 2. Master Vehicle
 
-Communication limitations were introduced in the `gazebo_slave.py` node in order to evaluate the performance of the platooning system under non-ideal V2V communication.
+The multi-vehicle experiments use:
 
-The two parameters are:
-
-```python
-self.communication_delay = 0.0
-self.packet_loss_probability = 0.0
+```text
+src/platooning_pkg/platooning_pkg/string_master_node.py
 ```
 
-The default configuration corresponds to the baseline scenario with no communication delay and no packet loss.
+The Master starts with:
 
-## 3.1 Baseline
-
-Use:
-
-```python
-self.communication_delay = 0.0
-self.packet_loss_probability = 0.0
+```text
+initial position = 0 m
+initial velocity = 20 m/s
 ```
 
-This represents ideal communication conditions.
+The simulation timestep is:
 
-## 3.2 Communication Delay Experiments
-
-For the delay experiments, packet loss remains disabled:
-
-```python
-self.packet_loss_probability = 0.0
+```text
+dt = 0.1 s
 ```
 
-### 200 ms
+To introduce a disturbance into the platoon, the Master applies a deceleration of:
 
-```python
-self.communication_delay = 0.2
+```text
+-1.5 m/s^2
 ```
 
-### 500 ms
+during:
 
-```python
-self.communication_delay = 0.5
+```text
+10 s <= t < 15 s
 ```
 
-### 1000 ms
+Outside this interval, its acceleration is zero.
 
-```python
-self.communication_delay = 1.0
+The Master publishes its state through:
+
+```text
+/master_state
 ```
 
-The delay is applied when Master messages are received by the Slave.
+The transmitted state contains the simulation time, position, and velocity.
 
-## 3.3 Packet Loss Experiments
-
-For the packet-loss experiments, communication delay is disabled:
-
-```python
-self.communication_delay = 0.0
-```
-
-### 10% Packet Loss
-
-```python
-self.packet_loss_probability = 0.1
-```
-
-### 20% Packet Loss
-
-```python
-self.packet_loss_probability = 0.2
-```
-
-### 40% Packet Loss
-
-```python
-self.packet_loss_probability = 0.4
-```
-
-Packet loss is implemented by randomly discarding received Master messages.
-
-When a message is discarded, the Slave continues operating using the most recently received Master information.
+The experiment duration is approximately 30 seconds.
 
 ---
 
-# 4. Building the ROS2 Workspace
+# 3. Multi-Vehicle Communication Topology
+
+The main communication topology is predecessor-following:
+
+```text
+Master
+  |
+  v
+Slave 1
+  |
+  v
+Slave 2
+  |
+  v
+Slave 3
+```
+
+The corresponding ROS 2 state topics are:
+
+```text
+Master  -> /master_state
+Slave 1 -> /slave1_state
+Slave 2 -> /slave2_state
+Slave 3 -> /slave3_state
+```
+
+Therefore:
+
+```text
+Slave 1 follows /master_state
+Slave 2 follows /slave1_state
+Slave 3 follows /slave2_state
+```
+
+This architecture allows the response of each consecutive follower to the same upstream disturbance to be examined.
+
+---
+
+# 4. Original Platooning Configuration
+
+The original configuration uses:
+
+```text
+h = 1.0 s
+```
+
+At the initial velocity of 20 m/s:
+
+```text
+desired_distance = 5 + 1.0 * 20
+                 = 25 m
+```
+
+The corresponding nominal initial positions are:
+
+```text
+Master  =   0 m
+Slave 1 = -25 m
+Slave 2 = -50 m
+Slave 3 = -75 m
+```
+
+The main follower node used for deterministic communication-delay experiments is:
+
+```text
+src/platooning_pkg/platooning_pkg/multi_slave_node.py
+```
+
+---
+
+# 5. Communication Delay
+
+Deterministic communication delay is implemented using a state buffer.
+
+Incoming predecessor states are stored and the controller uses delayed predecessor information according to the configured communication delay.
+
+The analysed delay values are:
+
+```text
+0 ms
+200 ms
+500 ms
+1000 ms
+```
+
+The age of the information used by the controller is recorded as:
+
+```text
+information_age =
+    control_time - predecessor_state_time
+```
+
+The curated multi-vehicle delay datasets are stored in:
+
+```text
+src/platooning_pkg/results/delay/
+```
+
+Three CSV files are provided for each delay condition, corresponding to Slave 1, Slave 2, and Slave 3.
+
+---
+
+# 6. String-Stability Evaluation
+
+String stability concerns the propagation of disturbances along a platoon.
+
+The implemented multi-vehicle experiment compares the spacing errors of:
+
+```text
+Slave 1
+Slave 2
+Slave 3
+```
+
+during the same disturbance generated by the Master vehicle.
+
+For the numerical comparison, the L2 norm of each Slave spacing error is calculated.
+
+The following propagation ratios are used:
+
+```text
+G21 = ||e2||2 / ||e1||2
+G32 = ||e3||2 / ||e2||2
+```
+
+where:
+
+```text
+e1 = Slave 1 spacing error
+e2 = Slave 2 spacing error
+e3 = Slave 3 spacing error
+```
+
+For this experimental metric, a ratio:
+
+```text
+G <= 1
+```
+
+indicates that no L2 spacing-error amplification is observed between the corresponding consecutive vehicles.
+
+The analysis script is:
+
+```text
+src/platooning_pkg/scripts/plot_string_stability.py
+```
+
+Example usage:
+
+```bash
+python3 src/platooning_pkg/scripts/plot_string_stability.py \
+  --slave1 slave1_string_delay1000.csv \
+  --slave2 slave2_string_delay1000.csv \
+  --slave3 slave3_string_delay1000.csv \
+  --label "String Stability - 1000 ms Delay" \
+  --output-dir string_stability_delay1000
+```
+
+The script generates:
+
+```text
+spacing_error.png
+slave_velocities.png
+actual_distance.png
+information_age.png
+string_stability_metrics.csv
+```
+
+A representative analysed 1000 ms delay case is included in:
+
+```text
+src/platooning_pkg/results/string_stability_delay1000/
+```
+
+The numerical ratios are used as experimental indicators of disturbance propagation. They should not be interpreted by themselves as a general mathematical proof of string stability for every operating condition.
+
+---
+
+# 7. Time-Headway Sweep
+
+A time-headway parameter sweep was performed to investigate the effect of the spacing policy under a 1000 ms communication delay.
+
+The tested values are:
+
+```text
+h = 1.00 s
+h = 1.25 s
+h = 1.50 s
+h = 1.75 s
+h = 2.00 s
+```
+
+For each value of `h`, the nominal initial spacing is adjusted according to:
+
+```text
+initial_gap = d0 + h * 20
+```
+
+Therefore:
+
+```text
+h = 1.00 s -> 25 m
+h = 1.25 s -> 30 m
+h = 1.50 s -> 35 m
+h = 1.75 s -> 40 m
+h = 2.00 s -> 45 m
+```
+
+The corresponding launch file is:
+
+```text
+src/platooning_pkg/launch/headway_sweep.launch.py
+```
+
+The automated experiment script is:
+
+```text
+src/platooning_pkg/scripts/run_headway_sweep.sh
+```
+
+The resulting datasets are stored in:
+
+```text
+src/platooning_pkg/results/headway_sweep/
+```
+
+Among the tested values, `h = 1.25 s` was selected as the improved candidate configuration for the studied simulation conditions.
+
+This value represents an experimentally selected operating point for the implemented controller, disturbance, and communication conditions. It should not be interpreted as a universal optimum for all platooning systems.
+
+---
+
+# 8. Improved Headway Configuration
+
+The improved candidate configuration uses:
+
+```text
+h = 1.25 s
+```
+
+At an initial velocity of 20 m/s:
+
+```text
+desired_distance = 5 + 1.25 * 20
+                 = 30 m
+```
+
+The corresponding nominal initial positions are:
+
+```text
+Master  =   0 m
+Slave 1 = -30 m
+Slave 2 = -60 m
+Slave 3 = -90 m
+```
+
+The implementation uses:
+
+```text
+src/platooning_pkg/platooning_pkg/adaptive_slave_node.py
+```
+
+This node supports the general headway relation:
+
+```text
+effective_headway =
+    base_headway +
+    delay_gain * communication_delay
+```
+
+For the final improved-delay comparison:
+
+```text
+base_headway = 1.25
+delay_gain = 0.0
+```
+
+Therefore, the tested improved configuration uses a fixed:
+
+```text
+effective_headway = 1.25 s
+```
+
+for all analysed communication delays.
+
+The improved-delay launch file is:
+
+```text
+src/platooning_pkg/launch/improved_delay.launch.py
+```
+
+The automated experiment script is:
+
+```text
+src/platooning_pkg/scripts/run_improved_delays.sh
+```
+
+The improved configuration is evaluated for:
+
+```text
+0 ms
+200 ms
+500 ms
+1000 ms
+```
+
+communication delay.
+
+The corresponding datasets are stored in:
+
+```text
+src/platooning_pkg/results/improved_delay/
+```
+---
+
+# 9. Packet Loss
+
+Packet loss is implemented in:
+
+```text
+src/platooning_pkg/platooning_pkg/multi_slave_packetloss.py
+```
+
+The analysed packet-loss probabilities are:
+
+```text
+0%
+10%
+20%
+40%
+```
+
+For each incoming predecessor message, a random number is generated and compared with the configured packet-loss probability.
+
+Conceptually:
+
+```python
+if random.random() < packet_loss_probability:
+    # packet is lost
+```
+
+When a packet is lost, the Slave does not update its predecessor information.
+
+Instead, the controller continues operating using the most recently successfully received predecessor state.
+
+This produces a last-received-state, or zero-order-hold, communication behaviour.
+
+The age of the available predecessor information is recorded as:
+
+```text
+information_age =
+    current_channel_time - predecessor_state_time
+```
+
+Therefore, consecutive packet losses can increase the age of the information used by the controller.
+
+A configurable random seed is supported to improve reproducibility of the packet-loss experiments.
+
+The packet-loss launch file is:
+
+```text
+src/platooning_pkg/launch/multislave_packetloss.launch.py
+```
+
+The automated experiment script is:
+
+```text
+src/platooning_pkg/scripts/run_multislave_packetloss.sh
+```
+
+---
+
+# 10. Original vs Improved Packet-Loss Experiments
+
+Packet-loss experiments were conducted for two spacing configurations.
+
+The original configuration uses:
+
+```text
+h = 1.00 s
+```
+
+The improved candidate configuration uses:
+
+```text
+h = 1.25 s
+```
+
+For both configurations, the tested packet-loss levels are:
+
+```text
+0%
+10%
+20%
+40%
+```
+
+The final datasets for the original configuration are stored in:
+
+```text
+src/platooning_pkg/results/packet_loss/original_h100/
+```
+
+The final datasets for the improved configuration are stored in:
+
+```text
+src/platooning_pkg/results/packet_loss/improved_h125/
+```
+
+Keeping the two configurations separate allows their behaviour to be compared under the same packet-loss conditions.
+
+---
+
+# 11. Experimental Results
+
+The repository contains curated datasets from the final experimental series.
+
+The results are organised as:
+
+```text
+src/platooning_pkg/results/
+├── delay/
+├── gazebo/
+├── headway_sweep/
+├── improved_delay/
+├── packet_loss/
+│   ├── original_h100/
+│   └── improved_h125/
+└── string_stability_delay1000/
+```
+
+The `delay/` directory contains the original `h = 1.00 s` multi-vehicle experiments for:
+
+```text
+0 ms
+200 ms
+500 ms
+1000 ms
+```
+
+The `headway_sweep/` directory contains the three-follower datasets for:
+
+```text
+h = 1.00 s
+h = 1.25 s
+h = 1.50 s
+h = 1.75 s
+h = 2.00 s
+```
+
+The `improved_delay/` directory contains the fixed `h = 1.25 s` experiments for:
+
+```text
+0 ms
+200 ms
+500 ms
+1000 ms
+```
+
+The `packet_loss/` directory contains separate datasets for the original and improved configurations.
+
+The main variables recorded during the numerical experiments include:
+
+```text
+control time
+predecessor state time
+information age
+Slave ID
+predecessor position
+Slave position
+predecessor velocity
+Slave velocity
+actual inter-vehicle distance
+desired inter-vehicle distance
+spacing error
+relative velocity error
+acceleration
+```
+
+The packet-loss implementation additionally records communication statistics that can be used to compare configured and realised packet-loss behaviour.
+
+---
+
+# 12. Representative 1000 ms String-Stability Results
+
+A representative analysed experiment with 1000 ms communication delay is included in:
+
+```text
+src/platooning_pkg/results/string_stability_delay1000/
+```
+
+This directory contains:
+
+```text
+actual_distance.png
+information_age.png
+slave_velocities.png
+spacing_error.png
+string_stability_metrics.csv
+```
+
+The plots provide a visual comparison of the responses of Slave 1, Slave 2, and Slave 3.
+
+The accompanying CSV file contains the calculated string-stability metrics for the analysed interval.
+
+---
+
+# 13. Gazebo Visualization
+
+A simplified Gazebo implementation is also included as a visualization and demonstration layer.
+
+The Gazebo-related ROS 2 nodes are:
+
+```text
+src/platooning_pkg/platooning_pkg/gazebo_master.py
+src/platooning_pkg/platooning_pkg/gazebo_slave.py
+src/platooning_pkg/platooning_pkg/data_logger.py
+```
+
+The Gazebo Master publishes its pose through:
+
+```text
+/master_gazebo_pose
+```
+
+The Gazebo Slave follows the Master and publishes:
+
+```text
+/slave_gazebo_pose
+```
+
+The Gazebo controller is intentionally simpler than the final multi-vehicle numerical implementation.
+
+Therefore, the Gazebo implementation should be considered primarily as a visualization/demo of the platooning concept rather than the main string-stability evaluation environment.
+
+Representative Gazebo results are stored in:
+
+```text
+src/platooning_pkg/results/gazebo/
+```
+
+and include:
+
+```text
+gazebo_platooning_data.csv
+gazebo_positions.png
+gazebo_distance_error.png
+```
+
+The Gazebo simulation package, including its world and launch configuration, is located under:
+
+```text
+src/platoon_gazebo/
+```
+
+---
+
+# 14. Legacy Implementation
+
+Earlier development versions are preserved in:
+
+```text
+src/platooning_pkg/legacy/
+```
+
+This directory contains the earlier single-follower implementation and associated scripts.
+
+These files are retained for reference and development history but are not part of the final multi-vehicle experimental implementation.
+
+The active multi-vehicle nodes and experiment scripts should be used when reproducing the final results.
+
+---
+
+# 15. Repository Structure
+
+The main repository structure is:
+
+```text
+PlatoonXlrt/
+├── README.md
+├── .gitignore
+│
+├── src/
+│   ├── platooning_pkg/
+│   │   ├── launch/
+│   │   │   ├── adaptive_delay1000.launch.py
+│   │   │   ├── headway_sweep.launch.py
+│   │   │   ├── improved_delay.launch.py
+│   │   │   ├── multislave_packetloss.launch.py
+│   │   │   └── string_stability.launch.py
+│   │   │
+│   │   ├── platooning_pkg/
+│   │   │   ├── adaptive_slave_node.py
+│   │   │   ├── data_logger.py
+│   │   │   ├── gazebo_master.py
+│   │   │   ├── gazebo_slave.py
+│   │   │   ├── multi_slave_node.py
+│   │   │   ├── multi_slave_packetloss.py
+│   │   │   └── string_master_node.py
+│   │   │
+│   │   ├── scripts/
+│   │   │   ├── plot_gazebo_results.py
+│   │   │   ├── plot_string_stability.py
+│   │   │   ├── run_headway_sweep.sh
+│   │   │   ├── run_improved_delays.sh
+│   │   │   └── run_multislave_packetloss.sh
+│   │   │
+│   │   ├── results/
+│   │   │   ├── delay/
+│   │   │   ├── gazebo/
+│   │   │   ├── headway_sweep/
+│   │   │   ├── improved_delay/
+│   │   │   ├── packet_loss/
+│   │   │   └── string_stability_delay1000/
+│   │   │
+│   │   ├── legacy/
+│   │   ├── package.xml
+│   │   ├── setup.cfg
+│   │   └── setup.py
+│   │
+│   └── platoon_gazebo/
+│
+└── ...
+```
+
+---
+
+# 16. Active ROS 2 Nodes
+
+The active numerical platooning executables are:
+
+```text
+string_master_node
+multi_slave_node
+adaptive_slave_node
+multi_slave_packetloss
+```
+
+The Gazebo/demo executables are:
+
+```text
+gazebo_master
+gazebo_slave
+data_logger
+```
+
+The earlier single-follower nodes are stored under `legacy/` and are not installed as active ROS 2 executables.
+
+---
+
+# 17. Building the Workspace
 
 Clone the repository:
 
@@ -366,217 +810,244 @@ Enter the repository:
 cd PlatoonXlrt
 ```
 
-Build the ROS2 packages:
+Source ROS 2:
 
 ```bash
-colcon build
+source /opt/ros/jazzy/setup.bash
 ```
 
-Source the workspace:
+Build the platooning package:
+
+```bash
+colcon build --packages-select platooning_pkg --symlink-install
+```
+
+Source the resulting workspace:
 
 ```bash
 source install/setup.bash
+```
+
+The main Python packages required for analysis are:
+
+```text
+numpy
+pandas
+matplotlib
 ```
 
 ---
 
-# 5. Running the Gazebo Simulation
+# 18. Running the Multi-Vehicle String-Stability Experiment
 
-## Step 1 - Start Gazebo
-
-From the repository root, run:
+After building and sourcing the workspace, run:
 
 ```bash
-gz sim -r src/platoon_gazebo/worlds/platoon_world.sdf
+ros2 launch platooning_pkg string_stability.launch.py
 ```
 
-The Gazebo environment should open with the Master and Slave vehicles.
+This starts:
 
-## Step 2 - Start the ROS2 Nodes
+```text
+String Master
+Slave 1
+Slave 2
+Slave 3
+```
 
-Open a second terminal.
+The Master applies the braking disturbance between 10 s and 15 s.
 
-Navigate to the repository and source the workspace:
+The current launch configuration provides the 1000 ms deterministic-delay example.
+
+The experiment terminates automatically after approximately 30 seconds.
+
+---
+
+# 19. Analysing the String-Stability Experiment
+
+After the experiment has generated the three Slave CSV files, run:
 
 ```bash
-cd PlatoonXlrt
-source install/setup.bash
+python3 src/platooning_pkg/scripts/plot_string_stability.py \
+  --slave1 slave1_string_delay1000.csv \
+  --slave2 slave2_string_delay1000.csv \
+  --slave3 slave3_string_delay1000.csv \
+  --label "String Stability - 1000 ms Delay" \
+  --output-dir string_stability_delay1000
 ```
+
+The script calculates spacing-error metrics and the experimental propagation ratios:
+
+```text
+G21
+G32
+```
+
+and generates the corresponding plots.
+
+---
+
+# 20. Running the Headway Sweep
 
 Run:
 
 ```bash
-ros2 launch platoon_gazebo platoon_sim.launch.py
+./src/platooning_pkg/scripts/run_headway_sweep.sh
 ```
 
-The launch file starts:
+The script evaluates:
 
 ```text
-gazebo_master
-gazebo_slave
-data_logger
+h = 1.00 s
+h = 1.25 s
+h = 1.50 s
+h = 1.75 s
+h = 2.00 s
 ```
 
-The Master and Slave should now move in the Gazebo environment.
+under a 1000 ms deterministic communication delay.
+
+The resulting CSV files can be compared to evaluate how the selected time headway affects disturbance propagation and spacing behaviour.
 
 ---
 
-# 6. Data Logging
+# 21. Running the Improved Delay Experiments
 
-The `data_logger.py` node subscribes to:
-
-```text
-/master_gazebo_pose
-/slave_gazebo_pose
-```
-
-Data are recorded every 0.1 s.
-
-The following variables are stored:
-
-```text
-time
-master_position
-slave_position
-distance_error
-```
-
-The distance error is calculated as:
-
-```text
-actual_distance = master_position - slave_position
-distance_error = actual_distance - desired_distance
-```
-
-with:
-
-```text
-desired_distance = 5.0 m
-```
-
-The results are stored in:
-
-```text
-gazebo_platooning_data.csv
-```
-
-Note: the CSV file is opened in write mode. Therefore, a new simulation run replaces the previous contents of the file. Save or rename the CSV file after each experiment if the results need to be preserved.
-
----
-
-# 7. Generating the Gazebo Plots
-
-After completing a simulation, stop the ROS2 nodes using:
-
-```text
-Ctrl+C
-```
-
-Then run:
+Run:
 
 ```bash
-python3 plot_gazebo_results.py
+./src/platooning_pkg/scripts/run_improved_delays.sh
 ```
 
-The script reads:
+The selected candidate configuration:
 
 ```text
-gazebo_platooning_data.csv
+h = 1.25 s
 ```
 
-and generates:
+is evaluated under:
 
 ```text
-gazebo_positions.png
-gazebo_distance_error.png
+0 ms
+200 ms
+500 ms
+1000 ms
 ```
 
-The first plot compares the Master and Slave positions.
+communication delay.
 
-The second plot presents the distance error over time.
+These experiments can be compared directly with the original `h = 1.00 s` delay datasets.
 
 ---
 
-# 8. Reproducing the Experimental Scenarios
+# 22. Running the Multi-Vehicle Packet-Loss Experiments
 
-The following procedure can be used to reproduce each experiment.
-
-## Baseline
-
-Set in `gazebo_slave.py`:
-
-```python
-self.communication_delay = 0.0
-self.packet_loss_probability = 0.0
-```
-
-Build and source the workspace:
+Run:
 
 ```bash
-colcon build
-source install/setup.bash
+./src/platooning_pkg/scripts/run_multislave_packetloss.sh
 ```
 
-Start Gazebo and the ROS2 nodes and collect the results.
-
-## Delay Experiments
-
-Repeat the simulation using:
+The automated experiment series evaluates:
 
 ```text
-200 ms  -> communication_delay = 0.2
-500 ms  -> communication_delay = 0.5
-1000 ms -> communication_delay = 1.0
+Original configuration:
+h = 1.00 s
+
+Improved configuration:
+h = 1.25 s
 ```
 
-with:
-
-```python
-self.packet_loss_probability = 0.0
-```
-
-After changing the source code, rebuild and source the workspace before running the next experiment:
-
-```bash
-colcon build
-source install/setup.bash
-```
-
-## Packet Loss Experiments
-
-Repeat the simulation using:
+for:
 
 ```text
-10% -> packet_loss_probability = 0.1
-20% -> packet_loss_probability = 0.2
-40% -> packet_loss_probability = 0.4
+0%
+10%
+20%
+40%
 ```
 
-with:
+packet loss.
 
-```python
-self.communication_delay = 0.0
+The final datasets for the two configurations are stored separately under:
+
+```text
+src/platooning_pkg/results/packet_loss/
 ```
-
-Again, rebuild and source the workspace after changing the parameters.
 
 ---
 
-# 9. Experimental Outputs
+# 23. Gazebo Results
 
-The experiments allow comparison between:
+The Gazebo plotting script is:
 
-- Baseline operation
-- 200 ms communication delay
-- 500 ms communication delay
-- 1000 ms communication delay
-- 10% packet loss
-- 20% packet loss
-- 40% packet loss
+```text
+src/platooning_pkg/scripts/plot_gazebo_results.py
+```
 
-The main performance indicator is the inter-vehicle distance error.
+Representative Gazebo data and plots are already included under:
 
-The results show how increasing communication impairment affects the ability of the Slave to maintain the desired distance from the Master.
+```text
+src/platooning_pkg/results/gazebo/
+```
+
+The Gazebo implementation is maintained separately from the main multi-vehicle numerical experiments because it uses a simplified visualization-oriented controller.
+
+---
+
+# 24. Interpretation of the Results
+
+The numerical experiments are designed to examine how communication limitations affect platoon behaviour.
+
+The main quantities of interest include:
+
+- spacing error,
+- vehicle velocity,
+- inter-vehicle distance,
+- information age,
+- disturbance propagation between consecutive followers,
+- packet-loss statistics.
+
+Increasing communication delay causes the controller to operate using older predecessor information.
+
+Packet loss causes predecessor updates to be intermittently unavailable, increasing the age of the most recently received state during consecutive losses.
+
+The time-headway sweep provides an experimental method for investigating the trade-off between closer vehicle spacing and robustness to communication impairment.
+
+The `h = 1.25 s` configuration is therefore presented as an improved candidate for the specific scenarios studied in this implementation.
+
+---
+
+# 25. Important Stability Note
+
+The multi-vehicle simulations allow string behaviour to be evaluated experimentally by comparing disturbance propagation between consecutive vehicles.
+
+However, simulation results alone do not constitute a general mathematical proof of string stability.
+
+The numerical results should be interpreted together with the theoretical stability conditions and vehicle/controller models presented in the accompanying thesis and related literature.
+
+The conclusions obtained from this repository apply to the implemented model, controller parameters, disturbance profile, communication model, and experimental conditions.
+
+---
+
+# 26. Software Environment
+
+The project was developed and tested using:
+
+```text
+Ubuntu 24.04
+ROS 2 Jazzy
+Gazebo Sim
+Python 3
+```
+
+Main Python libraries used for data processing and visualization:
+
+```text
+numpy
+pandas
+matplotlib
+```
 
 ---
 
