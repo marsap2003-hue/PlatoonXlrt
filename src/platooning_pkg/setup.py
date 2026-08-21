@@ -20,10 +20,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ms',
-    maintainer_email='ms@todo.todo',
-    description='ROS2 package for vehicle platooning simulation',
-    license='TODO: License declaration',
+    maintainer='Marios Saparillas',
+    maintainer_email='marios.saparillas@example.com',
+    description='ROS 2 package for multi-vehicle platooning with communication delay, packet loss, and string-stability experiments',
+    license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
