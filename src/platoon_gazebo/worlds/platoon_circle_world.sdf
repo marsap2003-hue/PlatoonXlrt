@@ -1,0 +1,209 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <world name="platoon_circle_world">
+
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 50 0 0 0</pose>
+    </light>
+
+    <!-- Large ground plane -->
+    <model name="ground_plane">
+      <static>true</static>
+
+      <link name="link">
+
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>120 120</size>
+            </plane>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>120 120</size>
+            </plane>
+          </geometry>
+        </visual>
+
+      </link>
+    </model>
+
+
+    <!-- ================================================== -->
+    <!-- MASTER -->
+    <!-- Initial angle: 0 rad, R = 20 m -->
+    <!-- ================================================== -->
+
+    <model name="master_vehicle">
+      <pose>20 0 0.5 0 0 1.5708</pose>
+
+      <link name="body">
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>2 1 1</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>0 0 1 1</ambient>
+            <diffuse>0 0 1 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>2 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <inertial>
+          <mass>1.0</mass>
+        </inertial>
+
+      </link>
+    </model>
+
+
+    <!-- ================================================== -->
+    <!-- SLAVE 1 -->
+    <!-- Approximately 5 m behind Master along the circle -->
+    <!-- ================================================== -->
+
+    <model name="slave1_vehicle">
+      <pose>19.378 -4.948 0.5 0 0 1.3208</pose>
+
+      <link name="body">
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>2 1 1</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>1 0 0 1</ambient>
+            <diffuse>1 0 0 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>2 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <inertial>
+          <mass>1.0</mass>
+        </inertial>
+
+      </link>
+    </model>
+
+
+    <!-- ================================================== -->
+    <!-- SLAVE 2 -->
+    <!-- Approximately 10 m behind Master -->
+    <!-- ================================================== -->
+
+    <model name="slave2_vehicle">
+      <pose>17.552 -9.589 0.5 0 0 1.0708</pose>
+
+      <link name="body">
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>2 1 1</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>1 0.5 0 1</ambient>
+            <diffuse>1 0.5 0 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>2 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <inertial>
+          <mass>1.0</mass>
+        </inertial>
+
+      </link>
+    </model>
+
+
+    <!-- ================================================== -->
+    <!-- SLAVE 3 -->
+    <!-- Approximately 15 m behind Master -->
+    <!-- ================================================== -->
+
+    <model name="slave3_vehicle">
+      <pose>14.634 -13.633 0.5 0 0 0.8208</pose>
+
+      <link name="body">
+
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>2 1 1</size>
+            </box>
+          </geometry>
+
+          <material>
+            <ambient>0 1 0 1</ambient>
+            <diffuse>0 1 0 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>2 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <inertial>
+          <mass>1.0</mass>
+        </inertial>
+
+      </link>
+    </model>
+
+  </world>
+</sdf>
